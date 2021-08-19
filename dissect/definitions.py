@@ -7,6 +7,7 @@ from sage.all import ZZ
 from dissect.utils.json_handler import load_from_json
 
 ROOT_DIR: Union[Path, Any] = Path(__file__).parent  # This is the project root
+CURVE_PATH = "."
 CURVE_PATH_SIM = Path(ROOT_DIR, "curves_json_sim")
 TRAIT_PATH = Path(ROOT_DIR, "traits")
 PARALLEL_RESULTS_PATH = Path(ROOT_DIR, "utils", "parallel", "results")
