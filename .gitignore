@@ -1,6 +1,7 @@
 data/
 local/
 *venv/
+.vscode/
 .idea/
 *.log
 *.tmp
@@ -17,6 +18,7 @@ dissect/traits/**/*.params
 !dissect/traits/default.params
 dissect/traits/**/*.txt
 dissect/utils/parallel/results/*
+dissect/curves_json/*
 dissect/curves_json_sim/*
 DiSSECT.egg-info
 /dissect/results/

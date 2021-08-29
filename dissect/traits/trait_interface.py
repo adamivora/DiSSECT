@@ -11,7 +11,7 @@ from sage.parallel.decorate import fork
 
 from dissect.definitions import TRAIT_PATH
 from dissect.utils.json_handler import save_into_json, load_from_json
-
+from tqdm import tqdm
 
 def get_timestamp():
     """Returns the current datetime as CEST."""
@@ -113,10 +113,10 @@ def get_model_structure(curve_function):
 
 
 def is_structure_new(old, curve_function, curve):
-    if curve.name not in old:
+    if curve.name() not in old:
         return True
     model_structure = get_model_structure(curve_function)
-    computed = list(old[curve.name].values())[0]
+    computed = list(old[curve.name()].values())[0]
     return not compare_structures(model_structure, computed)
 
 
@@ -131,14 +131,14 @@ def update_curve_results(
 ):
     """Tries to run traits for each individual curve; called by compute_results."""
     log_obj.write_to_logs(
-        "Processing curve " + curve.name + ":", newlines=1, verbose_print=verbose
+        "Processing curve " + curve.name() + ":", newlines=1, verbose_print=verbose
     )
     new_results = {}
     new_struct = is_structure_new(old_results, curve_function, curve)
-    if curve.name not in old_results:
-        new_results[curve.name] = {}
+    if curve.name() not in old_results:
+        new_results[curve.name()] = {}
     else:
-        new_results[curve.name] = old_results[curve.name]
+        new_results[curve.name()] = old_results[curve.name()]
 
     for params_local_values in itertools.product(*params_global.values()):
         params_local = dict(zip(params_local_names, params_local_values))
@@ -148,17 +148,17 @@ def update_curve_results(
             verbose_print=verbose,
         )
         if (
-            curve.name in old_results
-            and str(params_local) in old_results[curve.name]
+            curve.name() in old_results
+            and str(params_local) in old_results[curve.name()]
             and not new_struct
         ):
             log_obj.write_to_logs("Already computed", newlines=1, verbose_print=verbose)
         else:
-            new_results[curve.name][str(params_local)] = curve_function(
+            new_results[curve.name()][str(params_local)] = curve_function(
                 curve, *params_local_values
             )
             log_obj.write_to_logs("Done", newlines=1, verbose_print=verbose)
-    return new_results[curve.name]
+    return new_results[curve.name()]
 
 
 def compute_results(curve_list, trait_name, curve_function, desc="", verbose=False):
@@ -195,7 +195,7 @@ def compute_results(curve_list, trait_name, curve_function, desc="", verbose=Fal
     std_count = 0
     sim_count = 0
     for curve in curve_list:
-        if "sim" in curve.name:
+        if "sim" in curve.name():
             sim_count += 1
         else:
             std_count += 1
@@ -212,10 +212,10 @@ def compute_results(curve_list, trait_name, curve_function, desc="", verbose=Fal
         verbose_print=verbose,
     )
 
-    for curve in curve_list:
+    for curve in tqdm(curve_list):
         start_time = time.time()
 
-        new_results[curve.name] = update_curve_results(
+        new_results[curve.name()] = update_curve_results(
             curve,
             curve_function,
             params_global,

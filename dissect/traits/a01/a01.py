@@ -7,7 +7,6 @@ from dissect.utils.custom_curve import CustomCurve
 
 TIME = 150
 
-
 def smith_normal_form(ext_ec):
     """compute the smith normal form, (n1,n2) where n1 divides n2"""
     gens = ext_ec.abelian_group().gens()

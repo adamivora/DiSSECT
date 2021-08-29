@@ -60,7 +60,7 @@ def curve_gen(
     for source in sources:
         curves = curve_db[source]["curves"]
         for curve in curves:
-            if ZZ(curve["cofactor"]) not in [ZZ(c) for c in allowed_cofactors]:
+            if allowed_cofactors[0] != 'any' and ZZ(curve["cofactor"]) not in [ZZ(c) for c in allowed_cofactors]:
                 continue
             if not binary and curve["field"]["type"] == "Binary":
                 continue
@@ -158,7 +158,7 @@ def import_curves(
             single_curve,
             allowed_cofactors,
         ),
-        key=lambda item: item.order,
+        key=lambda item: item.order(),
     )
     if verbose:
         print("")
@@ -200,7 +200,7 @@ def filter_curve_names(
         for curve in curves:
             if (
                 curve["category"] in allowed_categories
-                and ZZ(curve["cofactor"]) in [ZZ(c) for c in allowed_cofactors]
+                and (allowed_cofactors[0] == 'any' or (ZZ(curve["cofactor"]) in [ZZ(c) for c in allowed_cofactors]))
                 and curve["field"]["bits"] in allowed_bitsizes
             ):
                 if (allow_binary == False and curve["field"]["type"] == "Binary") or (

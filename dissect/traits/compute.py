@@ -9,6 +9,7 @@ from dissect.utils.custom_curve import CustomCurve
 from dissect.utils.database_handler import _cast_sage_types
 from dissect.definitions import TRAIT_NAMES, TRAIT_MODULE_PATH
 from dissect.traits.trait_info import params_iter
+from tqdm import tqdm
 
 
 def get_trait_function(trait):
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         if not isinstance(curves, list):
             curves = curves["curves"]
 
-    for curve in curves:
+    for curve in tqdm(curves):
         curve = CustomCurve(curve)
         for params in params_iter(args.trait):
             result = { "curve": curve.name() }
