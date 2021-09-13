@@ -256,8 +256,5 @@ def timeout(func, args=(), kwargs=None, timeout_duration=10):
     if kwargs is None:
         kwargs = {}
 
-    @fork(timeout=timeout_duration, verbose=False)
-    def my_new_func():
-        return func(*args, **kwargs)
-
-    return my_new_func()
+    # return my_new_func() - disable forking for benchmark
+    return func(*args, **kwargs)

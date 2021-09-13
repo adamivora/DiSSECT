@@ -15,6 +15,6 @@ cd $TRAITS_PATH
 for TRAIT in $TRAITS
 do
     echo "Running trait $TRAIT..."
-    py-spy record -s -o $OUTPUT_PATH/$TRAIT.json -d $SAMPLING_SECONDS -- $PYTHON run_traits_single.py -c all -a any -n $TRAIT
+    py-spy record -f speedscope -s -o $OUTPUT_PATH/$TRAIT.json -d $SAMPLING_SECONDS -- $PYTHON run_traits_single.py -c all -a any -n $TRAIT
     ps -f | grep "run_traits_single.py" | awk '{print $2}' | xargs kill 2>/dev/null || true
 done
