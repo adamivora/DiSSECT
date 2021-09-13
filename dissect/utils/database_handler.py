@@ -141,35 +141,6 @@ def upload_results(db: Database, trait_name: str, path: str) -> Tuple[int, int]:
     return success, total
 
 
-def get_curves_old(
-        db: Database, filters: Any = {}, raw: bool = False
-) -> Iterable[CustomCurve]:
-    curve_filter: Dict[str, Any] = {}
-
-    # Curve type filter
-    if hasattr(filters, "curve_type"):
-        if filters.curve_type == "sim":
-            curve_filter["standard"] = False
-        elif filters.curve_type == "std":
-            curve_filter["standard"] = True
-        elif filters.curve_type != "all":
-            curve_filter["category"] = filters.curve_type
-
-    # Bit-length filter
-    if hasattr(filters, "order_bound") and filters.order_bound != 0:
-        curve_filter["field.bits"] = {"$lte": filters.order_bound}
-
-    # Cofactor filter
-    if hasattr(filters, "allowed_cofactors") and filters.allowed_cofactors:
-        curve_filter["cofactor"] = {"$in": list(map(hex, filters.allowed_cofactors))}
-
-    cursor = db.curves.aggregate([{"$match": curve_filter}])
-
-    if raw:
-        return map(_decode_ints, cursor)
-    # Cursor tends to timeout -> collect the results first (memory heavy), alternatively disable cursor timeout
-    return map(CustomCurve, list(cursor))
-
 def get_curves(db: Database, query: Any = None) -> Iterable[CustomCurve]:
     aggregate_pipeline = []
     aggregate_pipeline.append({"$match": format_curve_query(query) if query else dict()})
@@ -177,6 +148,11 @@ def get_curves(db: Database, query: Any = None) -> Iterable[CustomCurve]:
     curves = list(db["curves"].aggregate(aggregate_pipeline))
 
     return map(_decode_ints, curves)
+
+
+def get_curves_count(db: Database, query: Any = None) -> int:
+    return db["curves"].count_documents(format_curve_query(query) if query else dict())
+
 
 def get_curve_categories(db: Database) -> Iterable[str]:
     return db["curves"].distinct("category")
@@ -265,7 +241,7 @@ def store_trait_result(
 def is_solved(
         db: Database, curve: CustomCurve, trait: str, params: Dict[str, Any]
 ) -> bool:
-    trait_result = {"curve": curve.name()}
+    trait_result = { "curve.name": curve.name() }
     trait_result["params"] = _cast_sage_types(params)
     return db[f"trait_{trait}"].find_one(trait_result) is not None
 
@@ -284,6 +260,9 @@ def get_trait_results(
 
     aggregated = list(db[f"trait_{trait}"].aggregate(aggregate_pipeline))
     return map(_decode_ints, map(_flatten_trait_result, aggregated))
+
+def get_trait_results_count(db: Database, trait: str, query: Dict[str, Any] = None):
+    return db[f"trait_{trait}"].count_documents(format_trait_query(trait, query) if query else dict())
 
 def format_trait_query(trait_name: str, query: Dict[str, Any]) -> Dict[str, Any]:
     result = {}
